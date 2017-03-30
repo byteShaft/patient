@@ -68,7 +68,9 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         Log.i("Token ",  AppGlobals.getStringFromSharedPreferences(AppGlobals.KEY_TOKEN));
-        Log.i("DOC ID", AppGlobals.getStringFromSharedPreferences(AppGlobals.KEY_PROFILE_ID));
+        Log.i("Test Affiliate", AppGlobals.getStringFromSharedPreferences(AppGlobals.KEY_AFFILIATE_CLINIC));
+        Log.i("Test Subscription", AppGlobals.getStringFromSharedPreferences(AppGlobals.KEY_SUBSCRIPTION_TYPE));
+        Log.i("Test Speciality", AppGlobals.getStringFromSharedPreferences(AppGlobals.KEY_DOC_SPECIALITY));
 
         if (AppGlobals.isDoctor()) {
             View headerView;
@@ -101,7 +103,7 @@ public class MainActivity extends AppCompatActivity
             docName.setTypeface(AppGlobals.typefaceNormal);
             docEmail.setTypeface(AppGlobals.typefaceNormal);
             docSpeciality.setTypeface(AppGlobals.typefaceNormal);
-//            docExpDate.setTypeface(AppGlobals.typefaceNormal);
+            docExpDate.setTypeface(AppGlobals.typefaceNormal);
 
             // setting up information
             docName.setText(AppGlobals.getStringFromSharedPreferences(
@@ -109,8 +111,16 @@ public class MainActivity extends AppCompatActivity
                     AppGlobals.getStringFromSharedPreferences(AppGlobals.KEY_LAST_NAME));
             docEmail.setText(AppGlobals.getStringFromSharedPreferences(AppGlobals.KEY_EMAIL));
             docSpeciality.setText(AppGlobals.getStringFromSharedPreferences(AppGlobals.KEY_DOC_SPECIALITY));
+            docExpDate.setText(AppGlobals.getStringFromSharedPreferences(AppGlobals.KEY_SUBSCRIPTION_TYPE));
             final SwitchCompat doctorOnlineSwitch = (SwitchCompat) headerView.findViewById(R.id.doc_nav_online_switch);
             doctorOnlineSwitch.setTypeface(AppGlobals.typefaceNormal);
+            if (AppGlobals.isOnline()) {
+                doctorOnlineSwitch.setChecked(true);
+                doctorOnlineSwitch.setText(R.string.online);
+            } else {
+                doctorOnlineSwitch.setChecked(false);
+                doctorOnlineSwitch.setText(R.string.offline);
+            }
             doctorOnlineSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
