@@ -23,7 +23,6 @@ import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -54,7 +53,6 @@ public class MySchedule extends Fragment {
     private ArrayList<JSONObject> scheduleList;
     private LinearLayout searchContainer;
     private String currentDate;
-    private static final long HALFANHOUR = 1800000;
     private ArrayList<String> initialTimeSLots;
 
     @Override
@@ -248,6 +246,68 @@ public class MySchedule extends Fragment {
             } else {
                 viewHolder = (ViewHolder) convertView.getTag();
             }
+            viewHolder.state.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    switch (view.getId()) {
+                        case R.id.check_box_appointment:
+                            JSONObject jsonObject = scheduleList.get(position);
+                            if (!viewHolder.state.isChecked()) {
+                                try {
+                                    jsonObject.put("state", 1);
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+                                viewHolder.state.setChecked(true);
+                            } else {
+                                try {
+                                    jsonObject.put("state", 0);
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+                                viewHolder.state.setChecked(true);
+                            }
+                            Log.i("TAG", jsonObject.toString());
+                            Log.i("TAG", "position " + position);
+                            scheduleList.remove(position);
+                            scheduleList.add(position, jsonObject);
+                            notifyDataSetChanged();
+                            Log.i("TAG", "List " + scheduleList);
+                            break;
+                    }
+                }
+            });
+//            viewHolder.state.setOnCheckedChangeListener(null);
+//            viewHolder.state.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+//                @Override
+//                public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+//                    switch (compoundButton.getId()) {
+//                        case R.id.check_box_appointment:
+//                            JSONObject jsonObject = scheduleList.get(position);
+//                            if (!b) {
+//                                try {
+//                                    jsonObject.put("state", 1);
+//                                } catch (JSONException e) {
+//                                    e.printStackTrace();
+//                                }
+//                                viewHolder.state.setChecked(true);
+//                            } else {
+//                                try {
+//                                    jsonObject.put("state", 0);
+//                                } catch (JSONException e) {
+//                                    e.printStackTrace();
+//                                }
+//                                viewHolder.state.setChecked(true);
+//                            }
+//                            Log.i("TAG", jsonObject.toString());
+//                            Log.i("TAG", "position " + position);
+//                            scheduleList.remove(position);
+//                            scheduleList.add(position, jsonObject);
+//                            Log.i("TAG", "List " + scheduleList);
+//                            break;
+//                    }
+//                }
+//            });
             try {
                 viewHolder.startTime.setText(scheduleList.get(position).getString("start_time"));
                 viewHolder.endTime.setText(scheduleList.get(position).getString("end_time"));
@@ -256,36 +316,6 @@ public class MySchedule extends Fragment {
                 } else {
                     viewHolder.state.setChecked(true);
                 }
-                viewHolder.state.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                    @Override
-                    public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                        Log.i("TAG", "oncheckedChanged");
-                        Log.d("TAG", "onCheckedChanged: " + viewHolder.state.getText() + " " + (b ? "selected":"deselected"));
-                        switch (compoundButton.getId()) {
-                            case R.id.check_box_appointment:
-                                JSONObject jsonObject = scheduleList.get(position);
-                                if (b) {
-                                    try {
-                                        jsonObject.put("state", 1);
-                                    } catch (JSONException e) {
-                                        e.printStackTrace();
-                                    }
-                                } else {
-                                    try {
-                                        jsonObject.put("state", 0);
-                                    } catch (JSONException e) {
-                                        e.printStackTrace();
-                                    }
-                                }
-                                Log.i("TAG", jsonObject.toString());
-                                Log.i("TAG", "position " + position);
-                                scheduleList.remove(position);
-                                scheduleList.add(position, jsonObject);
-                                Log.i("TAG", "List " + scheduleList);
-                                break;
-                        }
-                    }
-                });
             } catch (JSONException e) {
                 e.printStackTrace();
             }
