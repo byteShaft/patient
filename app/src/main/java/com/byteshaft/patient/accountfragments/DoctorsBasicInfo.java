@@ -538,12 +538,16 @@ public class DoctorsBasicInfo extends Fragment implements AdapterView.OnItemSele
                             String phoneNumberPrimary = jsonObject.getString(AppGlobals.KEY_PHONE_NUMBER_PRIMARY);
                             String phoneNumberSecondary = jsonObject.getString(AppGlobals.KEY_PHONE_NUMBER_SECONDARY);
 
-                            String affiliateClinic = jsonObject.getString(AppGlobals.KEY_AFFILIATE_CLINIC);
-                            String subscriptionType = jsonObject.getString(AppGlobals.KEY_SUBSCRIPTION_TYPE);
+                            JSONObject affiliateClinicJsonObject = jsonObject.getJSONObject(AppGlobals.KEY_AFFILIATE_CLINIC);
+                            String affiliateClinic = affiliateClinicJsonObject.getString("name");
+                            JSONObject subscriptionTypeJsonObject = jsonObject.getJSONObject(AppGlobals.KEY_SUBSCRIPTION_TYPE);
+                            String subscriptionType = subscriptionTypeJsonObject.getString("plan_type");
+                            JSONObject specialityJsonObject = jsonObject.getJSONObject("speciality");
+                            String speciality = specialityJsonObject.getString("name");
                             String address = jsonObject.getString(AppGlobals.KEY_ADDRESS);
                             String location = jsonObject.getString(AppGlobals.KEY_LOCATION);
+                            boolean chatStatus = jsonObject.getBoolean(AppGlobals.KEY_CHAT_STATUS);
 
-                            String chatStatus = jsonObject.getString(AppGlobals.KEY_CHAT_STATUS);
                             String state = jsonObject.getString(AppGlobals.KEY_STATE);
                             String city = jsonObject.getString(AppGlobals.KEY_CITY);
                             String docId = jsonObject.getString(AppGlobals.KEY_DOC_ID);
@@ -570,8 +574,10 @@ public class DoctorsBasicInfo extends Fragment implements AdapterView.OnItemSele
                             AppGlobals.saveDataToSharedPreferences(AppGlobals.KEY_SUBSCRIPTION_TYPE, subscriptionType);
                             AppGlobals.saveDataToSharedPreferences(AppGlobals.KEY_ADDRESS, address);
                             AppGlobals.saveDataToSharedPreferences(AppGlobals.KEY_LOCATION, location);
+                            AppGlobals.saveDataToSharedPreferences(AppGlobals.KEY_DOC_SPECIALITY, speciality);
 
-                            AppGlobals.saveDataToSharedPreferences(AppGlobals.KEY_CHAT_STATUS, chatStatus);
+//                            AppGlobals.saveDataToSharedPreferences(AppGlobals.KEY_CHAT_STATUS, chatStatus);
+                            AppGlobals.saveChatStatus(chatStatus);
                             AppGlobals.saveDataToSharedPreferences(AppGlobals.KEY_STATE, state);
                             AppGlobals.saveDataToSharedPreferences(AppGlobals.KEY_CITY, city);
                             AppGlobals.saveDataToSharedPreferences(AppGlobals.KEY_DOC_ID, docId);
