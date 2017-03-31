@@ -195,7 +195,7 @@ public class Helpers {
         }
     }
 
-    public static String getTime() {
+    public static String getDate() {
         Calendar c = Calendar.getInstance();
         SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy");
         return df.format(c.getTime());
