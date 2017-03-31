@@ -23,6 +23,7 @@ import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -252,46 +253,72 @@ public class MySchedule extends Fragment implements HttpRequest.OnReadyStateChan
             } else {
                 viewHolder = (ViewHolder) convertView.getTag();
             }
-            viewHolder.state.setOnClickListener(new View.OnClickListener() {
+//            viewHolder.state.setOnClickListener(new View.OnClickListener() {
+//                @Override
+//                public void onClick(View view) {
+//                    JSONObject jsonObject = scheduleList.get(position);
+//                    int pos = (int) viewHolder.state.getTag();
+//                    View checkBoxView = mListView.getChildAt(pos);
+//                    CheckBox cbx = (CheckBox) checkBoxView.findViewById(R.id.check_box_appointment);
+//                    Log.i("TAG", " checked" + cbx.isPressed());
+//                    Log.i("TAG", " id" + String.valueOf(cbx.getId() == R.id.check_box_appointment));
+////                    if (!viewHolder.state.isChecked()) {
+////                        try {
+////                            jsonObject.put("state", 1);
+////                        } catch (JSONException e) {
+////                            e.printStackTrace();
+////                        }
+////                        viewHolder.state.setChecked(true);
+////                        scheduleList.remove(position);
+////                        scheduleList.add(position, jsonObject);
+////                    } else {
+////                        try {
+////                            jsonObject.put("state", 0);
+////                        } catch (JSONException e) {
+////                            e.printStackTrace();
+////                        }
+////                        viewHolder.state.setChecked(false);
+////                        scheduleList.remove(position);
+////                        scheduleList.add(position, jsonObject);
+////                    }
+////                    notifyDataSetChanged();
+////                    scheduleList.remove(position);
+////                    scheduleList.add(position, jsonObject);
+////                    Log.i("TAG", "List " + scheduleList);
+//                }
+//            });
+            viewHolder.state.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
-                public void onClick(View view) {
+                public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                    Log.i("TAG", " boolean " + b);
                     JSONObject jsonObject = scheduleList.get(position);
                     int pos = (int) viewHolder.state.getTag();
                     View checkBoxView = mListView.getChildAt(pos);
-                    CheckBox cbx = (CheckBox) checkBoxView.findViewById(R.id.check_box_appointment);
-                    Log.i("TAG", " checked" + cbx.isChecked());
-                    Log.i("TAG", " id" + String.valueOf(cbx.getId() == R.id.check_box_appointment));
-//                    if (!viewHolder.state.isChecked()) {
-//                        try {
-//                            jsonObject.put("state", 1);
-//                        } catch (JSONException e) {
-//                            e.printStackTrace();
-//                        }
-//                        viewHolder.state.setChecked(true);
-//                        scheduleList.remove(position);
-//                        scheduleList.add(position, jsonObject);
-//                    } else {
-//                        try {
-//                            jsonObject.put("state", 0);
-//                        } catch (JSONException e) {
-//                            e.printStackTrace();
-//                        }
-//                        viewHolder.state.setChecked(false);
-//                        scheduleList.remove(position);
-//                        scheduleList.add(position, jsonObject);
-//                    }
-//                    notifyDataSetChanged();
-//                    scheduleList.remove(position);
-//                    scheduleList.add(position, jsonObject);
-//                    Log.i("TAG", "List " + scheduleList);
+                    if (checkBoxView != null) {
+                        CheckBox cbx = (CheckBox) checkBoxView.findViewById(R.id.check_box_appointment);
+                        Log.i("TAG", " checked" + b);
+                        Log.i("TAG", " id" + String.valueOf(cbx.getId() == R.id.check_box_appointment));
+                        if (b) {
+                            try {
+                                jsonObject.put("state", 1);
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                            scheduleList.remove(position);
+                            scheduleList.add(position, jsonObject);
+                        } else {
+                            try {
+                                jsonObject.put("state", 0);
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                            scheduleList.remove(position);
+                            scheduleList.add(position, jsonObject);
+                        }
+                    }
+
                 }
             });
-//            viewHolder.state.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-//                @Override
-//                public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-//                    Log.i("TAG", " boolean " + b);
-//                }
-//            });
             try {
                 viewHolder.startTime.setText(scheduleList.get(position).getString("start_time"));
                 viewHolder.endTime.setText(scheduleList.get(position).getString("end_time"));
