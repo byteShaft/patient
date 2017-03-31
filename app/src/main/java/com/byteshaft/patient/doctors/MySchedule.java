@@ -23,18 +23,22 @@ import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import com.byteshaft.patient.R;
+import com.byteshaft.patient.utils.AppGlobals;
 import com.byteshaft.patient.utils.Helpers;
+import com.byteshaft.requests.HttpRequest;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.lang.reflect.Field;
+import java.net.HttpURLConnection;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -46,7 +50,7 @@ import java.util.concurrent.TimeUnit;
  * Created by s9iper1 on 3/23/17.
  */
 
-public class MySchedule extends Fragment {
+public class MySchedule extends Fragment implements HttpRequest.OnReadyStateChangeListener, HttpRequest.OnErrorListener {
 
     private View mBaseView;
     private ListView mListView;
@@ -54,6 +58,7 @@ public class MySchedule extends Fragment {
     private LinearLayout searchContainer;
     private String currentDate;
     private ArrayList<String> initialTimeSLots;
+    private HttpRequest request;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -66,6 +71,7 @@ public class MySchedule extends Fragment {
                 (ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         containerParams.gravity = Gravity.CENTER_VERTICAL;
         containerParams.setMargins(20, 20, 10, 20);
+        getSchedule(Helpers.getDate());
         searchContainer.setLayoutParams(containerParams);
         // Setup search view
         final EditText toolbarSearchView = new EditText(getActivity());
@@ -139,7 +145,7 @@ public class MySchedule extends Fragment {
         toolbar.addView(searchContainer);
         scheduleList = new ArrayList<>();
 
-        currentDate = Helpers.getTime();
+        currentDate = Helpers.getDate();
         getTimeSlotsForDate(currentDate, TimeUnit.MINUTES.toMillis(45));
         return mBaseView;
     }
@@ -163,8 +169,8 @@ public class MySchedule extends Fragment {
         } catch (ParseException e) {
             e.printStackTrace();
         }
-        System.out.println("Date Start: "+dateObj1);
-        System.out.println("Date End: "+dateObj2);
+        System.out.println("Date Start: " + dateObj1);
+        System.out.println("Date End: " + dateObj2);
 
         long dif = dateObj1.getTime();
         while (dif < dateObj2.getTime()) {
@@ -179,12 +185,12 @@ public class MySchedule extends Fragment {
 
         for (int i = 0; i < initialTimeSLots.size(); i++) {
             StringBuilder time = new StringBuilder();
-            if (i+1 < initialTimeSLots.size()) {
+            if (i + 1 < initialTimeSLots.size()) {
                 time.append(initialTimeSLots.get(i));
             }
             time.append(" , ");
-            if (i+1 < initialTimeSLots.size()) {
-                time.append(initialTimeSLots.get(i+1));
+            if (i + 1 < initialTimeSLots.size()) {
+                time.append(initialTimeSLots.get(i + 1));
             }
 
             if (!time.toString().trim().isEmpty()) {
@@ -243,71 +249,76 @@ public class MySchedule extends Fragment {
                 viewHolder.endTime = (TextView) convertView.findViewById(R.id.end_time);
                 viewHolder.state = (CheckBox) convertView.findViewById(R.id.check_box_appointment);
                 convertView.setTag(viewHolder);
+                viewHolder.state.setTag(position);
             } else {
                 viewHolder = (ViewHolder) convertView.getTag();
             }
-            viewHolder.state.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    switch (view.getId()) {
-                        case R.id.check_box_appointment:
-                            JSONObject jsonObject = scheduleList.get(position);
-                            if (!viewHolder.state.isChecked()) {
-                                try {
-                                    jsonObject.put("state", 1);
-                                } catch (JSONException e) {
-                                    e.printStackTrace();
-                                }
-                                viewHolder.state.setChecked(true);
-                            } else {
-                                try {
-                                    jsonObject.put("state", 0);
-                                } catch (JSONException e) {
-                                    e.printStackTrace();
-                                }
-                                viewHolder.state.setChecked(true);
-                            }
-                            Log.i("TAG", jsonObject.toString());
-                            Log.i("TAG", "position " + position);
-                            scheduleList.remove(position);
-                            scheduleList.add(position, jsonObject);
-                            notifyDataSetChanged();
-                            Log.i("TAG", "List " + scheduleList);
-                            break;
-                    }
-                }
-            });
-//            viewHolder.state.setOnCheckedChangeListener(null);
-//            viewHolder.state.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+//            viewHolder.state.setOnClickListener(new View.OnClickListener() {
 //                @Override
-//                public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-//                    switch (compoundButton.getId()) {
-//                        case R.id.check_box_appointment:
-//                            JSONObject jsonObject = scheduleList.get(position);
-//                            if (!b) {
-//                                try {
-//                                    jsonObject.put("state", 1);
-//                                } catch (JSONException e) {
-//                                    e.printStackTrace();
-//                                }
-//                                viewHolder.state.setChecked(true);
-//                            } else {
-//                                try {
-//                                    jsonObject.put("state", 0);
-//                                } catch (JSONException e) {
-//                                    e.printStackTrace();
-//                                }
-//                                viewHolder.state.setChecked(true);
-//                            }
-//                            Log.i("TAG", jsonObject.toString());
-//                            Log.i("TAG", "position " + position);
-//                            scheduleList.remove(position);
-//                            scheduleList.add(position, jsonObject);
-//                            Log.i("TAG", "List " + scheduleList);
-//                            break;
-//                    }
+//                public void onClick(View view) {
+//                    JSONObject jsonObject = scheduleList.get(position);
+//                    int pos = (int) viewHolder.state.getTag();
+//                    View checkBoxView = mListView.getChildAt(pos);
+//                    CheckBox cbx = (CheckBox) checkBoxView.findViewById(R.id.check_box_appointment);
+//                    Log.i("TAG", " checked" + cbx.isPressed());
+//                    Log.i("TAG", " id" + String.valueOf(cbx.getId() == R.id.check_box_appointment));
+////                    if (!viewHolder.state.isChecked()) {
+////                        try {
+////                            jsonObject.put("state", 1);
+////                        } catch (JSONException e) {
+////                            e.printStackTrace();
+////                        }
+////                        viewHolder.state.setChecked(true);
+////                        scheduleList.remove(position);
+////                        scheduleList.add(position, jsonObject);
+////                    } else {
+////                        try {
+////                            jsonObject.put("state", 0);
+////                        } catch (JSONException e) {
+////                            e.printStackTrace();
+////                        }
+////                        viewHolder.state.setChecked(false);
+////                        scheduleList.remove(position);
+////                        scheduleList.add(position, jsonObject);
+////                    }
+////                    notifyDataSetChanged();
+////                    scheduleList.remove(position);
+////                    scheduleList.add(position, jsonObject);
+////                    Log.i("TAG", "List " + scheduleList);
 //                }
 //            });
+            viewHolder.state.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                    Log.i("TAG", " boolean " + b);
+                    JSONObject jsonObject = scheduleList.get(position);
+                    int pos = (int) viewHolder.state.getTag();
+                    View checkBoxView = mListView.getChildAt(pos);
+                    if (checkBoxView != null) {
+                        CheckBox cbx = (CheckBox) checkBoxView.findViewById(R.id.check_box_appointment);
+                        Log.i("TAG", " checked" + b);
+                        Log.i("TAG", " id" + String.valueOf(cbx.getId() == R.id.check_box_appointment));
+                        if (b) {
+                            try {
+                                jsonObject.put("state", 1);
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                            scheduleList.remove(position);
+                            scheduleList.add(position, jsonObject);
+                        } else {
+                            try {
+                                jsonObject.put("state", 0);
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                            scheduleList.remove(position);
+                            scheduleList.add(position, jsonObject);
+                        }
+                    }
+
+                }
+            });
             try {
                 viewHolder.startTime.setText(scheduleList.get(position).getString("start_time"));
                 viewHolder.endTime.setText(scheduleList.get(position).getString("end_time"));
@@ -332,5 +343,36 @@ public class MySchedule extends Fragment {
         TextView startTime;
         TextView endTime;
         CheckBox state;
+    }
+
+    // Internet Connectivity Functions
+
+    private void getSchedule(String date) {
+        request = new HttpRequest(getActivity());
+        request.setOnReadyStateChangeListener(this);
+        request.setOnErrorListener(this);
+        request.open("GET", String.format("%sdoctor/schedule?date=%s", AppGlobals.BASE_URL, date));
+        request.setRequestHeader("Authorization", "Token " +
+                AppGlobals.getStringFromSharedPreferences(AppGlobals.KEY_TOKEN));
+        request.send();
+    }
+
+    @Override
+    public void onReadyStateChange(HttpRequest request, int readyState) {
+
+    }
+
+    @Override
+    public void onError(HttpRequest request, int readyState, short error, Exception exception) {
+        switch (readyState) {
+            case HttpRequest.STATE_DONE:
+                switch (request.getStatus()) {
+                    case HttpURLConnection.HTTP_OK:
+                        Log.i("TAG", this.request.getResponseText());
+                        break;
+
+                }
+        }
+
     }
 }
