@@ -165,6 +165,16 @@ public class AppGlobals extends Application {
         return sharedPreferences.getBoolean(KEY_ACCOUNT_TYPE, false);
     }
 
+    public static void saveChatStatus(boolean state) {
+        SharedPreferences sharedPreferences = getPreferenceManager();
+        sharedPreferences.edit().putBoolean(KEY_CHAT_STATUS, state).apply();
+    }
+
+    public static boolean isOnline() {
+        SharedPreferences sharedPreferences = getPreferenceManager();
+        return sharedPreferences.getBoolean(KEY_CHAT_STATUS, false);
+    }
+
     public static SharedPreferences getPreferenceManager() {
         return getContext().getSharedPreferences("shared_prefs", MODE_PRIVATE);
     }

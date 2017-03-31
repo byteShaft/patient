@@ -214,12 +214,20 @@ public class Login extends Fragment implements View.OnClickListener, HttpRequest
                                     String profileId = jsonObject.getString(AppGlobals.KEY_PROFILE_ID);
 
                                     if (AppGlobals.isDoctor()) {
-                                        String speciality = jsonObject.getString(AppGlobals.KEY_DOC_SPECIALITY);
+                                        JSONObject specialityJsonObject = jsonObject.getJSONObject("speciality");
+                                        String speciality = specialityJsonObject.getString("name");
+                                        JSONObject subscriptionPlanObject = jsonObject.getJSONObject("subscription_plan");
+                                        String subscriptionType = subscriptionPlanObject.getString("plan_type");
+                                        JSONObject affiliateClinicObject = jsonObject.getJSONObject("affiliate_clinic");
+                                        String affiliateClinic = affiliateClinicObject.getString("name");
                                         String collageId = jsonObject.getString(AppGlobals.KEY_COLLEGE_ID);
                                         String consultationTime = jsonObject.getString(AppGlobals.KEY_CONSULTATION_TIME);
+
                                         AppGlobals.saveDataToSharedPreferences(AppGlobals.KEY_CONSULTATION_TIME, consultationTime);
                                         AppGlobals.saveDataToSharedPreferences(AppGlobals.KEY_DOC_SPECIALITY, speciality);
                                         AppGlobals.saveDataToSharedPreferences(AppGlobals.KEY_COLLEGE_ID, collageId);
+                                        AppGlobals.saveDataToSharedPreferences(AppGlobals.KEY_SUBSCRIPTION_TYPE, subscriptionType);
+                                        AppGlobals.saveDataToSharedPreferences(AppGlobals.KEY_AFFILIATE_CLINIC, affiliateClinic);
                                     }
                                     String imageUrl = jsonObject.getString(AppGlobals.KEY_IMAGE_URL);
 
