@@ -136,44 +136,41 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1">
 
-                <TextView
-                    android:id="@+id/diagnostic_text_view"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="5dp"
-                    android:text="Diagnostics"
-                    android:textSize="15sp" />
-
                 <Spinner
                     android:id="@+id/diagnostics_spinner"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="wrap_content"
+                    android:layout_margin="2dp" />
 
                 <View
+                    android:id="@+id/diagnostics_spinner_view"
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
                     android:layout_below="@+id/diagnostics_spinner"
                     android:background="#000" />
 
+                <Button
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_below="@+id/diagnostics_spinner_view"
+                    android:background="@mipmap/ic_min"
+                    android:layout_marginTop="5dp"
+                    />
+
             </RelativeLayout>
 
             <RelativeLayout
+                android:layout_toRightOf="@+id/diagnostics_spinner_layout"
                 android:id="@+id/diagnostics_button_layout"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_gravity="center_horizontal">
+                android:layout_gravity="center_horizontal"
+                android:layout_height="match_parent">
 
                 <Button
                     android:id="@+id/plus_button"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    android:layout_marginLeft="10dp"
-                    android:background="@mipmap/ic_plus_blue" />
-                <Button
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    android:layout_centerHorizontal="true"
-                    android:layout_toRightOf="@+id/plus_button"
+                    android:layout_width="38dp"
+                    android:layout_height="38dp"
+                    android:layout_marginLeft="15dp"
                     android:background="@mipmap/ic_plus_blue" />
             </RelativeLayout>
         </LinearLayout>
@@ -191,23 +188,17 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1">
 
-                <TextView
-                    android:id="@+id/medication_text_view"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="5dp"
-                    android:text="Medication"
-                    android:textSize="15sp" />
-
                 <Spinner
                     android:id="@+id/medication_spinner"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="wrap_content"
+                    android:layout_margin="2dp" />
 
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
                     android:layout_below="@+id/medication_spinner"
+                    android:layout_marginRight="10dp"
                     android:background="#000" />
 
             </RelativeLayout>
@@ -221,17 +212,22 @@
                 <TextView
                     android:id="@+id/qty_textview"
                     android:layout_width="50dp"
-                    android:layout_height="40dp"
-                    android:layout_marginTop="4dp"
+                    android:layout_height="28dp"
                     android:gravity="center"
                     android:hint="Qty"
                     android:textSize="15sp" />
 
+                <View
+                    android:layout_width="40dp"
+                    android:layout_height="1dp"
+                    android:layout_below="@+id/qty_textview"
+                    android:background="#000" />
+
+
                 <Button
                     android:id="@+id/medication_plus_button"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    android:layout_marginLeft="10dp"
+                    android:layout_width="38dp"
+                    android:layout_height="38dp"
                     android:layout_toRightOf="@+id/qty_textview"
                     android:background="@mipmap/ic_plus_blue" />
             </RelativeLayout>
