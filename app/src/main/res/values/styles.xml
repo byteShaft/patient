@@ -38,6 +38,10 @@
         <item name="android:textColor">@android:color/black</item>
     </style>
 
+    <style name="AppTheme.WhiteAccent">
+        <item name="colorAccent">@color/progressbar_background</item> <!-- Whatever color you want-->
+    </style>
+
     <!--<style name="MyButtonBar">-->
         <!--&lt;!&ndash; Define a background for the button bar and a divider between the buttons here &ndash;&gt;-->
         <!--<item name="android:divider"></item>-->

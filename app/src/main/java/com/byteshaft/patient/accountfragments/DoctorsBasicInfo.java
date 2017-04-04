@@ -17,6 +17,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 
@@ -83,6 +84,8 @@ public class DoctorsBasicInfo extends Fragment implements AdapterView.OnItemSele
 
     private HttpRequest mRequest;
     private DonutProgress donutProgress;
+    private ProgressBar progressBar;
+    private AlertDialog.Builder alertDialogBuilder;
     private AlertDialog alertDialog;
     // Date lists
     private ArrayList<States> statesList;
@@ -177,9 +180,11 @@ public class DoctorsBasicInfo extends Fragment implements AdapterView.OnItemSele
                 System.out.println(states.getId());
                 break;
             case R.id.cities_spinner:
-                Cities city = citiesList.get(i);
-                mCitiesSpinnerValueString = String.valueOf(city.getCityId());
-                System.out.println(city.getCityId());
+                if (citiesList.size() > 0) {
+                    Cities city = citiesList.get(i);
+                    mCitiesSpinnerValueString = String.valueOf(city.getCityId());
+                    System.out.println(city.getCityId());
+                }
                 break;
             case R.id.speciality_spinner:
                 Specialities specialities = specialitiesList.get(i);
@@ -281,7 +286,7 @@ public class DoctorsBasicInfo extends Fragment implements AdapterView.OnItemSele
         Log.i("TAG", "key image url " + AppGlobals.getStringFromSharedPreferences(AppGlobals.KEY_IMAGE_URL));
         if (!AppGlobals.getStringFromSharedPreferences(AppGlobals.KEY_IMAGE_URL).trim().isEmpty()) {
             data.append(FormData.TYPE_CONTENT_FILE, "photo", AppGlobals.getStringFromSharedPreferences(AppGlobals.KEY_IMAGE_URL));
-            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getActivity());
+            alertDialogBuilder = new AlertDialog.Builder(getActivity());
             alertDialogBuilder.setTitle(getResources().getString(R.string.updating));
             alertDialogBuilder.setCancelable(false);
             LayoutInflater inflater = getActivity().getLayoutInflater();
@@ -308,6 +313,7 @@ public class DoctorsBasicInfo extends Fragment implements AdapterView.OnItemSele
         Log.i("send test data", data.toString());
 
         mRequest = new HttpRequest(getActivity().getApplicationContext());
+        mRequest.setTimeout(200000);
         mRequest.setOnReadyStateChangeListener(this);
         mRequest.setOnFileUploadProgressListener(this);
         mRequest.open("POST", String.format("%suser/profile", AppGlobals.BASE_URL));
@@ -501,7 +507,6 @@ public class DoctorsBasicInfo extends Fragment implements AdapterView.OnItemSele
         switch (readyState) {
             case HttpRequest.STATE_DONE:
                 if (alertDialog != null) {
-                    donutProgress.setProgress(100);
                     alertDialog.dismiss();
                 } else {
                     Helpers.dismissProgressDialog();
@@ -594,6 +599,7 @@ public class DoctorsBasicInfo extends Fragment implements AdapterView.OnItemSele
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
+                        break;
 
                 }
         }
@@ -605,6 +611,22 @@ public class DoctorsBasicInfo extends Fragment implements AdapterView.OnItemSele
         double progress = (loaded / (double) total) * 100;
         Log.i("current progress", "" + (int) progress);
         donutProgress.setProgress((int) progress);
+        if ((int) progress == 100) {
+            Log.i("PROGRESS", "condition matched");
+            if (alertDialog != null) {
+                donutProgress.setProgress(100);
+                alertDialog.dismiss();
+            }
+            alertDialogBuilder = new AlertDialog.Builder(getActivity());
+            alertDialogBuilder.setTitle(getResources().getString(R.string.finishing_up));
+            alertDialogBuilder.setCancelable(false);
+            LayoutInflater inflater = getActivity().getLayoutInflater();
+            View dialogView = inflater.inflate(R.layout.finishingup_dialog, null);
+            alertDialogBuilder.setView(dialogView);
+            progressBar = (ProgressBar) dialogView.findViewById(R.id.progress_bar);
+            alertDialog = alertDialogBuilder.create();
+            alertDialog.show();
+        }
 
     }
 
