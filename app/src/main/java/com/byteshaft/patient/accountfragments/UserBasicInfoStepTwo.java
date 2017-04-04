@@ -15,6 +15,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -68,7 +69,9 @@ public class UserBasicInfoStepTwo extends Fragment implements AdapterView.OnItem
     private Button mSaveButton;
     private HttpRequest mRequest;
     private DonutProgress donutProgress;
+    private ProgressBar progressBar;
     private AlertDialog alertDialog;
+    private AlertDialog.Builder alertDialogBuilder;
 
 
     private ArrayList<States> statesList;
@@ -345,7 +348,7 @@ public class UserBasicInfoStepTwo extends Fragment implements AdapterView.OnItem
         data.append(FormData.TYPE_CONTENT_TEXT, "address", AppGlobals.getStringFromSharedPreferences(AppGlobals.KEY_ADDRESS));
         if (!AppGlobals.getStringFromSharedPreferences(AppGlobals.KEY_IMAGE_URL).trim().isEmpty()) {
             data.append(FormData.TYPE_CONTENT_FILE, "photo", AppGlobals.getStringFromSharedPreferences(AppGlobals.KEY_IMAGE_URL));
-            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getActivity());
+            alertDialogBuilder = new AlertDialog.Builder(getActivity());
             alertDialogBuilder.setTitle(getResources().getString(R.string.updating));
             alertDialogBuilder.setCancelable(false);
             LayoutInflater inflater = getActivity().getLayoutInflater();
@@ -361,7 +364,6 @@ public class UserBasicInfoStepTwo extends Fragment implements AdapterView.OnItem
         data.append(FormData.TYPE_CONTENT_TEXT, "state_id", mStatesSpinnerValueString);
         data.append(FormData.TYPE_CONTENT_TEXT, "city_id", mCitiesSpinnerValueString);
         data.append(FormData.TYPE_CONTENT_TEXT, "insurance_carrier_id", mInsuranceCarrierSpinnerValueString);
-//        data.append(FormData.TYPE_CONTENT_TEXT, "affiliate_clinic", mAffiliatedClinicsSpinnerValueString);
         data.append(FormData.TYPE_CONTENT_TEXT, "phone_number_primary", mPhoneOneEditTextString);
         data.append(FormData.TYPE_CONTENT_TEXT, "phone_number_secondary", mPhoneTwoEditTextString);
         data.append(FormData.TYPE_CONTENT_TEXT, "emergency_contact", mEmergencyContactString);
@@ -369,12 +371,12 @@ public class UserBasicInfoStepTwo extends Fragment implements AdapterView.OnItem
         data.append(FormData.TYPE_CONTENT_TEXT, "show_news", mNewsCheckBoxString);
 
         mRequest = new HttpRequest(getActivity().getApplicationContext());
+        mRequest.setTimeout(200000);
         mRequest.setOnReadyStateChangeListener(this);
         mRequest.setOnFileUploadProgressListener(this);
         mRequest.open("POST", String.format("%suser/profile", AppGlobals.BASE_URL));
         mRequest.setRequestHeader("Authorization", "Token " +
                 AppGlobals.getStringFromSharedPreferences(AppGlobals.KEY_TOKEN));
-        mRequest.setTimeout(200000);
         mRequest.send(data);
     }
 
@@ -383,7 +385,6 @@ public class UserBasicInfoStepTwo extends Fragment implements AdapterView.OnItem
         switch (readyState) {
             case HttpRequest.STATE_DONE:
                 if (alertDialog != null) {
-                    donutProgress.setProgress(100);
                     alertDialog.dismiss();
                 } else {
                     Helpers.dismissProgressDialog();
@@ -473,7 +474,21 @@ public class UserBasicInfoStepTwo extends Fragment implements AdapterView.OnItem
         double progress = (loaded / (double) total) * 100;
         Log.i("current progress", "" + (int) progress);
         donutProgress.setProgress((int) progress);
-
-
+        if ((int) progress == 100) {
+            Log.i("PROGRESS", "condition matched");
+            if (alertDialog != null) {
+                donutProgress.setProgress(100);
+                alertDialog.dismiss();
+            }
+            alertDialogBuilder = new AlertDialog.Builder(getActivity());
+            alertDialogBuilder.setTitle(getResources().getString(R.string.finishing_up));
+            alertDialogBuilder.setCancelable(false);
+            LayoutInflater inflater = getActivity().getLayoutInflater();
+            View dialogView = inflater.inflate(R.layout.finishingup_dialog, null);
+            alertDialogBuilder.setView(dialogView);
+            progressBar = (ProgressBar) dialogView.findViewById(R.id.progress_bar);
+            alertDialog = alertDialogBuilder.create();
+            alertDialog.show();
+        }
     }
 }
