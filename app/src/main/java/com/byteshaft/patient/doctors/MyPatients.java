@@ -221,12 +221,7 @@ public class MyPatients extends Fragment {
             }
             final com.byteshaft.patient.gettersetter.MyPatients myPatients = myPatientsList.get(position);
             viewHolder.name.setText(myPatients.getPatientsName());
-            String age = myPatients.getPatientAge();
-            String[] dob = age.split("/");
-            int date = Integer.parseInt(dob[0]);
-            int month = Integer.parseInt(dob[1]);
-            int year = Integer.parseInt(dob[2]);
-            String years = Helpers.getAge(year, month, date);
+            String years = Helpers.calculateAge(myPatients.getPatientAge());
             viewHolder.patientAge.setText(" " + "-" + " " + "(" +  years +"a)");
             viewHolder.distance.setText(myPatients.getPatientLocation());
             Helpers.getBitMap(myPatients.getPatientImage(), viewHolder.circleImageView);

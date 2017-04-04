@@ -13,6 +13,7 @@ import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 
@@ -199,5 +200,17 @@ public class Helpers {
         Calendar c = Calendar.getInstance();
         SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy");
         return df.format(c.getTime());
+    }
+
+    public static String calculateAge(String dateOfBirth) {
+        String[] dob = dateOfBirth.split("/");
+        Log.i("AGE", dob[0] + dob[1] + dob[2]);
+        System.out.println("age is : " + dateOfBirth);
+
+        int date = Integer.parseInt(dob[0]);
+        int month = Integer.parseInt(dob[1]);
+        int year = Integer.parseInt(dob[2]);
+        String years = Helpers.getAge(year, month, date);
+        return years;
     }
 }
