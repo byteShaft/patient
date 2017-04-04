@@ -142,6 +142,8 @@ public class MainActivity extends AppCompatActivity
                                 doctorOnlineSwitch.setText(R.string.offline);
                             }
                             changeStatus(b);
+                            AppGlobals.saveChatStatus(b);
+                            doctorOnlineSwitch.setEnabled(false);
                             break;
                     }
                 }
@@ -171,6 +173,7 @@ public class MainActivity extends AppCompatActivity
             TextView patientName = (TextView) headerView.findViewById(R.id.patient_nav_name);
             TextView patientEmail = (TextView) headerView.findViewById(R.id.patient_nav_email);
             TextView patientAge = (TextView) headerView.findViewById(R.id.patient_nav_age);
+            patientOnlineSwitch = (SwitchCompat) headerView.findViewById(R.id.patient_nav_online_switch);
             profilePicture = (CircleImageView) headerView.findViewById(R.id.nav_imageView);
             patientName.setText(AppGlobals.getStringFromSharedPreferences(
                     AppGlobals.KEY_FIRST_NAME) + " " +
@@ -186,7 +189,6 @@ public class MainActivity extends AppCompatActivity
             int year = Integer.parseInt(dob[2]);
             String years = Helpers.getAge(year, month, date);
             patientAge.setText(years + " years");
-            patientOnlineSwitch = (SwitchCompat) headerView.findViewById(R.id.patient_nav_online_switch);
             patientEmail.setText(AppGlobals.getStringFromSharedPreferences(AppGlobals.KEY_EMAIL));
             patientOnlineSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
@@ -199,6 +201,7 @@ public class MainActivity extends AppCompatActivity
                                 patientOnlineSwitch.setText(R.string.offline);
                             }
                             changeStatus(b);
+                            AppGlobals.saveChatStatus(b);
                             patientOnlineSwitch.setEnabled(false);
                             break;
                     }
@@ -364,7 +367,11 @@ public class MainActivity extends AppCompatActivity
             case HttpRequest.STATE_DONE:
                 switch (request.getStatus()) {
                     case HttpURLConnection.HTTP_OK:
-                        patientOnlineSwitch.setEnabled(true);
+                        if (!AppGlobals.isDoctor()) {
+                            patientOnlineSwitch.setEnabled(true);
+                        } else {
+                            doctorOnlineSwitch.setEnabled(true);
+                        }
                 }
         }
     }
