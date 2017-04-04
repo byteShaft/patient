@@ -37,13 +37,20 @@ import com.byteshaft.patient.patients.FavouriteDoctors;
 import com.byteshaft.patient.patients.MyAppointments;
 import com.byteshaft.patient.utils.AppGlobals;
 import com.byteshaft.patient.utils.Helpers;
+import com.byteshaft.requests.HttpRequest;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.net.HttpURLConnection;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
 import static com.byteshaft.patient.utils.Helpers.getBitMap;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+        implements NavigationView.OnNavigationItemSelectedListener,
+        HttpRequest.OnReadyStateChangeListener, HttpRequest.OnErrorListener {
 
     public static MainActivity sInstance;
     private static final int STORAGE_PERMISSION = 0;
@@ -52,7 +59,10 @@ public class MainActivity extends AppCompatActivity
         return sInstance;
     }
 
+    private SwitchCompat doctorOnlineSwitch;
+    private SwitchCompat patientOnlineSwitch;
     private CircleImageView profilePicture;
+    private HttpRequest request;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,7 +77,7 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        Log.i("Token ",  AppGlobals.getStringFromSharedPreferences(AppGlobals.KEY_TOKEN));
+        Log.i("Token ", AppGlobals.getStringFromSharedPreferences(AppGlobals.KEY_TOKEN));
         Log.i("Test Affiliate", AppGlobals.getStringFromSharedPreferences(AppGlobals.KEY_AFFILIATE_CLINIC));
         Log.i("Test Subscription", AppGlobals.getStringFromSharedPreferences(AppGlobals.KEY_SUBSCRIPTION_TYPE));
         Log.i("Test Speciality", AppGlobals.getStringFromSharedPreferences(AppGlobals.KEY_DOC_SPECIALITY));
@@ -97,6 +107,7 @@ public class MainActivity extends AppCompatActivity
             TextView docEmail = (TextView) headerView.findViewById(R.id.doc_nav_email);
             TextView docSpeciality = (TextView) headerView.findViewById(R.id.doc_nav_speciality);
             TextView docExpDate = (TextView) headerView.findViewById(R.id.doc_nav_expiry_date);
+            doctorOnlineSwitch = (SwitchCompat) headerView.findViewById(R.id.doc_nav_online_switch);
             profilePicture = (CircleImageView) headerView.findViewById(R.id.nav_imageView);
 
             //setting typeface
@@ -112,7 +123,6 @@ public class MainActivity extends AppCompatActivity
             docEmail.setText(AppGlobals.getStringFromSharedPreferences(AppGlobals.KEY_EMAIL));
             docSpeciality.setText(AppGlobals.getStringFromSharedPreferences(AppGlobals.KEY_DOC_SPECIALITY));
             docExpDate.setText(AppGlobals.getStringFromSharedPreferences(AppGlobals.KEY_SUBSCRIPTION_TYPE));
-            final SwitchCompat doctorOnlineSwitch = (SwitchCompat) headerView.findViewById(R.id.doc_nav_online_switch);
             doctorOnlineSwitch.setTypeface(AppGlobals.typefaceNormal);
             if (AppGlobals.isOnline()) {
                 doctorOnlineSwitch.setChecked(true);
@@ -131,6 +141,7 @@ public class MainActivity extends AppCompatActivity
                             } else {
                                 doctorOnlineSwitch.setText(R.string.offline);
                             }
+                            changeStatus(b);
                             break;
                     }
                 }
@@ -175,7 +186,7 @@ public class MainActivity extends AppCompatActivity
             int year = Integer.parseInt(dob[2]);
             String years = Helpers.getAge(year, month, date);
             patientAge.setText(years + " years");
-            final SwitchCompat patientOnlineSwitch = (SwitchCompat) headerView.findViewById(R.id.patient_nav_online_switch);
+            patientOnlineSwitch = (SwitchCompat) headerView.findViewById(R.id.patient_nav_online_switch);
             patientEmail.setText(AppGlobals.getStringFromSharedPreferences(AppGlobals.KEY_EMAIL));
             patientOnlineSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
@@ -187,13 +198,14 @@ public class MainActivity extends AppCompatActivity
                             } else {
                                 patientOnlineSwitch.setText(R.string.offline);
                             }
+                            changeStatus(b);
+                            patientOnlineSwitch.setEnabled(false);
                             break;
                     }
                 }
             });
             loadFragment(new DoctorsList());
         }
-
 
         if (ContextCompat.checkSelfPermission(this,
                 android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
@@ -225,6 +237,22 @@ public class MainActivity extends AppCompatActivity
             }
         }
 
+    }
+
+    private void changeStatus(boolean status) {
+        request = new HttpRequest(this);
+        request.setOnReadyStateChangeListener(this);
+        request.setOnErrorListener(this);
+        request.open("PATCH", String.format("%suser/profile", AppGlobals.BASE_URL));
+        request.setRequestHeader("Authorization", "Token " +
+                AppGlobals.getStringFromSharedPreferences(AppGlobals.KEY_TOKEN));
+        JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.put(AppGlobals.KEY_CHAT_STATUS, status);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        request.send(jsonObject.toString());
     }
 
     @Override
@@ -328,5 +356,21 @@ public class MainActivity extends AppCompatActivity
         FragmentTransaction tx = getSupportFragmentManager().beginTransaction();
         tx.replace(R.id.container, fragment);
         tx.commit();
+    }
+
+    @Override
+    public void onReadyStateChange(HttpRequest request, int readyState) {
+        switch (readyState) {
+            case HttpRequest.STATE_DONE:
+                switch (request.getStatus()) {
+                    case HttpURLConnection.HTTP_OK:
+                        patientOnlineSwitch.setEnabled(true);
+                }
+        }
+    }
+
+    @Override
+    public void onError(HttpRequest request, int readyState, short error, Exception exception) {
+
     }
 }
