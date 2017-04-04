@@ -179,15 +179,7 @@ public class MainActivity extends AppCompatActivity
                     AppGlobals.KEY_FIRST_NAME) + " " +
                     AppGlobals.getStringFromSharedPreferences(AppGlobals.KEY_LAST_NAME));
 
-            String age = AppGlobals.getStringFromSharedPreferences(AppGlobals.KEY_DATE_OF_BIRTH);
-            String[] dob = age.split("/");
-            Log.i("AGE", dob[0] + dob[1] + dob[2]);
-            System.out.println("age is : " + age);
-
-            int date = Integer.parseInt(dob[0]);
-            int month = Integer.parseInt(dob[1]);
-            int year = Integer.parseInt(dob[2]);
-            String years = Helpers.getAge(year, month, date);
+            String years = Helpers.calculateAge(AppGlobals.getStringFromSharedPreferences(AppGlobals.KEY_DATE_OF_BIRTH));
             patientAge.setText(years + " years");
             patientEmail.setText(AppGlobals.getStringFromSharedPreferences(AppGlobals.KEY_EMAIL));
             patientOnlineSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {

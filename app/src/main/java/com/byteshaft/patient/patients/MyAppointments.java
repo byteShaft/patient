@@ -139,12 +139,12 @@ public class MyAppointments extends Fragment {
         toolbar.addView(searchContainer);
         appointments = new ArrayList<>();
         appointmentList = (ListView) mBaseView.findViewById(R.id.patient_appointment);
-        appointments.add(new String[]{"10-2-2017", "10:00", "Dr Shahid", "Dermatology" , "Service details", "A"});
-        appointments.add(new String[]{"11-2-2017", "12:00", "Dr Bilal", "ENT",  "Service details", "C"});
-        appointments.add(new String[]{"12-2-2017", "14:00", "Dr Mohsin", "Child specialist",  "Service details", "P"});
-        appointments.add(new String[]{"12-2-2017", "16:00", "Dr Zeshan", "Chest Specialist" , "Service details", "C"});
-        appointments.add(new String[]{"14-2-2017", "11:00", "Dr Hussnain", "FCPS" ,  "Service details", "P"});
-        appointments.add(new String[]{"16-2-2017", "13:00", "Dr Karobar","Dermatologist" , "Service details", "A"});
+        appointments.add(new String[]{"10-2-2017", "10:00", "Dr Shahid", "Dermatology", "Service details", "A"});
+        appointments.add(new String[]{"11-2-2017", "12:00", "Dr Bilal", "ENT", "Service details", "C"});
+        appointments.add(new String[]{"12-2-2017", "14:00", "Dr Mohsin", "Child specialist", "Service details", "P"});
+        appointments.add(new String[]{"12-2-2017", "16:00", "Dr Zeshan", "Chest Specialist", "Service details", "C"});
+        appointments.add(new String[]{"14-2-2017", "11:00", "Dr Hussnain", "FCPS", "Service details", "P"});
+        appointments.add(new String[]{"16-2-2017", "13:00", "Dr Karobar", "Dermatologist", "Service details", "A"});
         appointmentList.setAdapter(new Adapter(getContext(), appointments));
 
         patientName = (TextView) mBaseView.findViewById(R.id.patient_name_dashboard);
@@ -163,19 +163,11 @@ public class MyAppointments extends Fragment {
                 AppGlobals.getStringFromSharedPreferences(AppGlobals.KEY_LAST_NAME));
         patientEmail.setText(AppGlobals.getStringFromSharedPreferences(AppGlobals.KEY_EMAIL));
         if (AppGlobals.isLogin() && AppGlobals.getStringFromSharedPreferences(AppGlobals.SERVER_PHOTO_URL) != null) {
-            String url = String.format("%s"+ AppGlobals
+            String url = String.format("%s" + AppGlobals
                     .getStringFromSharedPreferences(AppGlobals.SERVER_PHOTO_URL), AppGlobals.SERVER_IP);
             getBitMap(url, profilePicture);
         }
-        String age = AppGlobals.getStringFromSharedPreferences(AppGlobals.KEY_DATE_OF_BIRTH);
-        String[] dob = age.split("/");
-        Log.i("AGE", dob[0] + dob[1] + dob[2]);
-        System.out.println("age is : " + age);
-
-        int date = Integer.parseInt(dob[0]);
-        int month = Integer.parseInt(dob[1]);
-        int year = Integer.parseInt(dob[2]);
-        String years = Helpers.getAge(year, month, date);
+        String years = Helpers.calculateAge(AppGlobals.getStringFromSharedPreferences(AppGlobals.KEY_DATE_OF_BIRTH));
         patientAge.setText(years + " years");
         return mBaseView;
     }
@@ -191,7 +183,8 @@ public class MyAppointments extends Fragment {
         switch (item.getItemId()) {
             case R.id.action_search:
                 return true;
-            default:return false;
+            default:
+                return false;
         }
     }
 
@@ -236,11 +229,11 @@ public class MyAppointments extends Fragment {
             Rect rect = new Rect();
             String text = String.valueOf(viewHolder.doctorName.getText());
             paint.getTextBounds(text, 0, text.length(), rect);
-            if(rect.height() > viewHolder.doctorName.getHeight() || rect.width() >
+            if (rect.height() > viewHolder.doctorName.getHeight() || rect.width() >
                     viewHolder.doctorName.getWidth()) {
                 Log.i("My Appointments", "Your text is too large");
                 String specialist;
-                if(appointmentsList.get(position)[3].length() > 7) {
+                if (appointmentsList.get(position)[3].length() > 7) {
                     specialist = appointmentsList.get(position)[3].substring(0, 7
                     ).trim() + "…";
                 } else {
@@ -249,7 +242,6 @@ public class MyAppointments extends Fragment {
                 viewHolder.doctorName.setText(appointmentsList.get(position)[2] + " - " + specialist);
 
             }
-
 
 
             viewHolder.serviceDescription.setText(appointmentsList.get(position)[4]);
