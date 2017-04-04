@@ -111,6 +111,7 @@
     <string name="appointments">Appointments</string>
     <string name="my_patient_details">My Patient Details</string>
     <string name="messages">Messages</string>
+    <string name="permission_granted">Permission Granted</string>
 
 </resources>
 

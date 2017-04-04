@@ -167,9 +167,6 @@ public class MainActivity extends AppCompatActivity
 
             String age = AppGlobals.getStringFromSharedPreferences(AppGlobals.KEY_DATE_OF_BIRTH);
             String[] dob = age.split("/");
-            Log.i("AGE", dob[0] + dob[1] + dob[2]);
-            System.out.println("age is : " + age);
-
             int date = Integer.parseInt(dob[0]);
             int month = Integer.parseInt(dob[1]);
             int year = Integer.parseInt(dob[2]);
