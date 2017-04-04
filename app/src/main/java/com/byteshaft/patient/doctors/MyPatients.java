@@ -39,10 +39,15 @@ import com.byteshaft.patient.messages.ConversationActivity;
 import com.byteshaft.patient.patients.PatientDetails;
 import com.byteshaft.patient.utils.AppGlobals;
 import com.byteshaft.patient.utils.Helpers;
+import com.byteshaft.requests.HttpRequest;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.lang.reflect.Field;
+import java.net.HttpURLConnection;
 import java.util.ArrayList;
-import java.util.HashMap;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -53,18 +58,19 @@ import static android.view.View.GONE;
  */
 
 public class MyPatients extends Fragment {
+
     private View mBaseView;
     private ListView mListView;
-    private HashMap<Integer, String[]> doctorsList;
-    private ArrayList<String> addedDates;
+    private ArrayList<com.byteshaft.patient.gettersetter.MyPatients> myPatientsList;
     private LinearLayout searchContainer;
     private CustomAdapter customAdapter;
-    private HashMap<String, Integer> showingPosition;
+    private HttpRequest request;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         mBaseView = inflater.inflate(R.layout.my_patients, container, false);
         mListView = (ListView) mBaseView.findViewById(R.id.patients_list);
+        getPatientsDetails();
         searchContainer = new LinearLayout(getActivity());
         Toolbar toolbar = (Toolbar) getActivity().findViewById(R.id.toolbar);
         Toolbar.LayoutParams containerParams = new Toolbar.LayoutParams
@@ -133,17 +139,9 @@ public class MyPatients extends Fragment {
         clearParams.gravity = Gravity.CENTER;
         // Add search view to toolbar and hide it
         toolbar.addView(searchContainer);
-        doctorsList = new HashMap<>();
-        addedDates = new ArrayList<>();
-        showingPosition = new HashMap<>();
-        doctorsList.put(0, new String[]{"Bilal","27", "2", "0"});
-        doctorsList.put(1, new String[]{"Husnain","22", "2", "1"});
-        doctorsList.put(2, new String[]{"shahid", "23", "3", "1"});
-        doctorsList.put(3, new String[]{"Omer","24", "4", "0"});
-        doctorsList.put(4, new String[]{"Mohsin", "23" ,"6","1"});
-        doctorsList.put(5, new String[]{"Imran Hakeem", "20", "8", "1"});
+        myPatientsList = new ArrayList<>();
         customAdapter = new CustomAdapter(getActivity().getApplicationContext(),
-                R.layout.doctors_search_delagete, doctorsList);
+                R.layout.doctors_search_delagete, myPatientsList);
         mListView.setAdapter(customAdapter);
         setHasOptionsMenu(true);
         mListView.setOnScrollListener(new AbsListView.OnScrollListener() {
@@ -187,19 +185,19 @@ public class MyPatients extends Fragment {
             case R.id.action_search:
 
                 return true;
-            default:return false;
+            default:
+                return false;
         }
     }
 
-    class CustomAdapter extends ArrayAdapter<HashMap<Integer, String[]>> {
+    class CustomAdapter extends ArrayAdapter<ArrayList<com.byteshaft.patient.gettersetter.MyPatients>> {
 
-        private HashMap<Integer, String[]> doctorsList;
+        private ArrayList<com.byteshaft.patient.gettersetter.MyPatients> myPatientsList;
         private ViewHolder viewHolder;
 
-        public CustomAdapter(Context context, int resource, HashMap<Integer,
-                String[]> doctorsList) {
+        public CustomAdapter(Context context, int resource, ArrayList<com.byteshaft.patient.gettersetter.MyPatients> myPatientsList) {
             super(context, resource);
-            this.doctorsList = doctorsList;
+            this.myPatientsList = myPatientsList;
         }
 
         @NonNull
@@ -221,15 +219,18 @@ public class MyPatients extends Fragment {
             } else {
                 viewHolder = (ViewHolder) convertView.getTag();
             }
-
-            if (Integer.valueOf(doctorsList.get(position)[3]) == 0) {
+            final com.byteshaft.patient.gettersetter.MyPatients myPatients = myPatientsList.get(position);
+            viewHolder.name.setText(myPatients.getPatientsName());
+            String years = Helpers.calculateAge(myPatients.getPatientAge());
+            viewHolder.patientAge.setText(" " + "-" + " " + "(" +  years +"a)");
+            viewHolder.distance.setText(myPatients.getPatientLocation());
+            Helpers.getBitMap(myPatients.getPatientImage(), viewHolder.circleImageView);
+            if (!myPatients.getChatStatus()) {
                 viewHolder.status.setImageResource(R.mipmap.ic_offline_indicator);
             } else {
                 viewHolder.status.setImageResource(R.mipmap.ic_online_indicator);
             }
-            viewHolder.name.setText(doctorsList.get(position)[0]);
-            viewHolder.patientAge.setText(" - ("+doctorsList.get(position)[1]+"a)");
-            viewHolder.distance.setText(" "+doctorsList.get(position)[2]+" km");
+
             viewHolder.chat.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -246,7 +247,7 @@ public class MyPatients extends Fragment {
                         requestPermissions(new String[]{Manifest.permission.CALL_PHONE},
                                 AppGlobals.CALL_PERMISSION);
                     } else {
-                        Intent intent = new Intent(Intent.ACTION_CALL, Uri.parse("tel:" + "03120676767"));
+                        Intent intent = new Intent(Intent.ACTION_CALL, Uri.parse("tel:" + myPatients.getPatientPhoneNumber()));
                         startActivity(intent);
                     }
                 }
@@ -256,9 +257,58 @@ public class MyPatients extends Fragment {
 
         @Override
         public int getCount() {
-            return doctorsList.size();
+            return myPatientsList.size();
         }
     }
+
+    private void getPatientsDetails() {
+        request = new HttpRequest(getActivity());
+        request.setOnReadyStateChangeListener(new HttpRequest.OnReadyStateChangeListener() {
+            @Override
+            public void onReadyStateChange(HttpRequest request, int readyState) {
+                switch (readyState) {
+                    case HttpRequest.STATE_DONE:
+                        Helpers.dismissProgressDialog();
+                        switch (request.getStatus()) {
+                            case HttpURLConnection.HTTP_OK:
+                                System.out.println(request.getResponseText());
+                                try {
+                                    JSONObject object = new JSONObject(request.getResponseText());
+                                    JSONArray jsonArray = object.getJSONArray("results");
+                                    for (int i = 0; i < jsonArray.length(); i++) {
+                                        JSONObject jsonObject = jsonArray.getJSONObject(i);
+                                        com.byteshaft.patient.gettersetter.MyPatients myPatients = new com.byteshaft.patient.gettersetter.MyPatients();
+                                        myPatients.setPatientId(jsonObject.getInt("id"));
+                                        myPatients.setPatientsName(jsonObject.getString("first_name") + "" + jsonObject.getString("last_name"));
+                                        myPatients.setPatientAge(jsonObject.getString("dob"));
+                                        myPatients.setPatientPhoneNumber(jsonObject.getString("phone_number_primary"));
+                                        myPatients.setPatientLocation(jsonObject.getString("location"));
+                                        myPatients.setPatientImage(jsonObject.getString("photo"));
+                                        myPatients.setChatStatus(jsonObject.getBoolean("available_to_chat"));
+                                        myPatientsList.add(myPatients);
+                                        customAdapter.notifyDataSetChanged();
+                                    }
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+                        }
+                }
+
+            }
+        });
+        request.setOnErrorListener(new HttpRequest.OnErrorListener() {
+            @Override
+            public void onError(HttpRequest request, int readyState, short error, Exception exception) {
+
+            }
+        });
+        request.open("GET", String.format("%sdoctor/list-patients", AppGlobals.BASE_URL));
+        request.setRequestHeader("Authorization", "Token " +
+                AppGlobals.getStringFromSharedPreferences(AppGlobals.KEY_TOKEN));
+        request.send();
+        Helpers.showProgressDialog(getActivity(), "Getting patients ...");
+    }
+
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -267,8 +317,7 @@ public class MyPatients extends Fragment {
             case AppGlobals.CALL_PERMISSION:
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    Intent intent = new Intent(Intent.ACTION_CALL, Uri.parse("tel:" + "03120676767"));
-                    startActivity(intent);
+                    Helpers.showSnackBar(getView(), R.string.permission_granted);
                 } else {
                     Helpers.showSnackBar(getView(), R.string.permission_denied);
                 }

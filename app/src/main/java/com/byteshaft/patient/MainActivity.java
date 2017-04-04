@@ -178,7 +178,6 @@ public class MainActivity extends AppCompatActivity
             patientName.setText(AppGlobals.getStringFromSharedPreferences(
                     AppGlobals.KEY_FIRST_NAME) + " " +
                     AppGlobals.getStringFromSharedPreferences(AppGlobals.KEY_LAST_NAME));
-
             String years = Helpers.calculateAge(AppGlobals.getStringFromSharedPreferences(AppGlobals.KEY_DATE_OF_BIRTH));
             patientAge.setText(years + " years");
             patientEmail.setText(AppGlobals.getStringFromSharedPreferences(AppGlobals.KEY_EMAIL));
